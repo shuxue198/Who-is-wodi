@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>谁是卧底</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #eee;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .players-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .player-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .player-card.active {
+            border-color: #667eea;
+            background: #eef1ff;
+        }
+
+        .player-card.eliminated {
+            opacity: 0.5;
+            background: #f8d7da;
+        }
+
+        .player-card.spy-reveal {
+            background: #ffeeba;
+            border-color: #f39c12;
+        }
+
+        .player-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .player-role {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .word-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .word-title {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .word-text {
+            font-size: 36px;
+            font-weight: bold;
+            letter-spacing: 8px;
+        }
+
+        .round-info {
+            background: #e8f5e9;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2e7d32;
+            font-weight: 500;
+        }
+
+        .voting-section {
+            margin-top: 30px;
+        }
+
+        .vote-btn {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .vote-btn:hover:not(:disabled) {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .vote-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .vote-btn.selected {
+            border-color: #667eea;
+            background: #eef1ff;
+        }
+
+        .result-section {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .result-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .result-text {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .reveal-word {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .reveal-word span {
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .speech-input {
+            width: 100%;
+            height: 100px;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: none;
+            margin-bottom: 20px;
+        }
+
+        .speech-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .speech-history {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .speech-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .speech-item:last-child {
+            border-bottom: none;
+        }
+
+        .speech-player {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .speech-content {
+            color: #333;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .word-text {
+                font-size: 24px;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎭 谁是卧底</h1>
+        <p class="subtitle">找出隐藏在平民中的卧底！</p>
+
+        <div id="step1" class="step active">
+            <div class="form-group">
+                <label>玩家人数（4-10人）</label>
+                <input type="number" id="playerCount" min="4" max="10" value="6">
+            </div>
+            <div class="form-group">
+                <label>输入玩家名字（用逗号分隔）</label>
+                <input type="text" id="playerNames" placeholder="如：张三,李四,王五,赵六">
+            </div>
+            <button class="btn" onclick="startGame()">开始游戏</button>
+        </div>
+
+        <div id="step2" class="step">
+            <div class="word-display">
+                <div class="word-title" id="wordTitle">第 1 位玩家 - 你的词语</div>
+                <div class="word-text" id="currentWord"></div>
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="nextPlayer()">已记住，传给下一位</button>
+                <button class="btn btn-secondary" onclick="showPlayers()">查看玩家列表</button>
+            </div>
+            <div id="waitingHint" style="display:none; text-align:center; margin-top:20px; color:#666;">
+                请将屏幕交给下一位玩家
+            </div>
+        </div>
+
+        <div id="step3" class="step">
+            <div class="round-info" id="roundInfo"></div>
+            <div class="speech-history" id="speechHistory"></div>
+            <textarea class="speech-input" id="speechInput" placeholder="请描述你的词语..."></textarea>
+            <button class="btn" onclick="submitSpeech()">提交描述</button>
+        </div>
+
+        <div id="step4" class="step">
+            <div class="round-info">请投票选出你认为是卧底的玩家</div>
+            <div class="voting-section" id="votingSection"></div>
+            <button class="btn" onclick="submitVote()" disabled id="voteBtn">确认投票</button>
+        </div>
+
+        <div id="step5" class="step">
+            <div class="result-section">
+                <div class="result-icon" id="resultIcon"></div>
+                <div class="result-title" id="resultTitle"></div>
+                <div class="result-text" id="resultText"></div>
+                <div class="reveal-word" id="revealWord"></div>
+                <button class="btn" onclick="restartGame()">再来一局</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const wordPairs = [
+            { civilian: '苹果', spy: '梨' },
+            { civilian: '香蕉', spy: '芒果' },
+            { civilian: '牛奶', spy: '豆浆' },
+            { civilian: '手机', spy: '电话' },
+            { civilian: '电脑', spy: '电视' },
+            { civilian: '篮球', spy: '足球' },
+            { civilian: '米饭', spy: '面条' },
+            { civilian: '牙刷', spy: '牙膏' },
+            { civilian: '毛巾', spy: '浴巾' },
+            { civilian: '雨伞', spy: '雨衣' },
+            { civilian: '火车', spy: '地铁' },
+            { civilian: '眼镜', spy: '墨镜' },
+            { civilian: '手表', spy: '闹钟' },
+            { civilian: '冰箱', spy: '冰柜' },
+            { civilian: '空调', spy: '风扇' },
+            { civilian: '沙发', spy: '椅子' },
+            { civilian: '筷子', spy: '勺子' },
+            { civilian: '杯子', spy: '碗' },
+            { civilian: '书本', spy: '报纸' },
+            { civilian: '铅笔', spy: '钢笔' },
+            { civilian: '书包', spy: '背包' },
+            { civilian: '鞋子', spy: '袜子' },
+            { civilian: '帽子', spy: '围巾' },
+            { civilian: '手套', spy: '袜子' },
+            { civilian: '蛋糕', spy: '面包' },
+            { civilian: '可乐', spy: '雪碧' },
+            { civilian: '饼干', spy: '薯片' },
+            { civilian: '汉堡', spy: '三明治' },
+            { civilian: '老虎', spy: '狮子' },
+            { civilian: '熊猫', spy: '北极熊' },
+            { civilian: '大象', spy: '河马' },
+            { civilian: '企鹅', spy: '鸭子' },
+            { civilian: '鲨鱼', spy: '海豚' },
+            { civilian: '玫瑰', spy: '月季' },
+            { civilian: '太阳', spy: '月亮' },
+            { civilian: '星星', spy: '流星' },
+            { civilian: '大海', spy: '湖泊' },
+            { civilian: '森林', spy: '树林' },
+            { civilian: '瀑布', spy: '河流' },
+            { civilian: '沙漠', spy: '戈壁' },
+            { civilian: '长城', spy: '城墙' },
+            { civilian: '故宫', spy: '宫殿' },
+            { civilian: '学校', spy: '医院' },
+            { civilian: '商店', spy: '超市' },
+            { civilian: '银行', spy: '邮局' },
+            { civilian: '警察', spy: '保安' },
+            { civilian: '医生', spy: '护士' },
+            { civilian: '老师', spy: '教授' }
+        ];
+
+        let gameState = {
+            players: [],
+            currentWord: '',
+            spyIndex: -1,
+            round: 1,
+            currentPlayerIndex: 0,
+            votes: {},
+            selectedVote: null,
+            speechHistory: [],
+            eliminatedPlayers: []
+        };
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function startGame() {
+            const count = parseInt(document.getElementById('playerCount').value);
+            const namesInput = document.getElementById('playerNames').value;
+            
+            let names = [];
+            if (namesInput.trim()) {
+                names = namesInput.split(',').map(n => n.trim()).filter(n => n);
+            }
+            
+            if (names.length === 0) {
+                names = Array.from({ length: count }, (_, i) => `玩家${i + 1}`);
+            } else if (names.length !== count) {
+                alert(`请输入${count}个玩家名字，或留空使用默认名字`);
+                return;
+            }
+
+            const shuffledNames = shuffleArray([...names]);
+            const spyIndex = Math.floor(Math.random() * count);
+            const wordPair = wordPairs[Math.floor(Math.random() * wordPairs.length)];
+
+            gameState.players = shuffledNames.map((name, index) => ({
+                name,
+                isSpy: index === spyIndex,
+                word: index === spyIndex ? wordPair.spy : wordPair.civilian
+            }));
+            
+            gameState.spyIndex = spyIndex;
+            gameState.currentWord = gameState.players[0].word;
+            gameState.round = 1;
+            gameState.currentPlayerIndex = 0;
+            gameState.votes = {};
+            gameState.selectedVote = null;
+            gameState.speechHistory = [];
+            gameState.eliminatedPlayers = [];
+            gameState.civilianWord = wordPair.civilian;
+            gameState.spyWord = wordPair.spy;
+
+            showStep(2);
+            document.getElementById('currentWord').textContent = gameState.currentWord;
+        }
+
+        function showPlayers() {
+            alert(`玩家列表：\n${gameState.players.map(p => p.name).join('\n')}`);
+        }
+
+        function nextPlayer() {
+            const currentDisplayIndex = gameState.currentPlayerIndex;
+            
+            gameState.currentPlayerIndex++;
+            
+            if (gameState.currentPlayerIndex >= gameState.players.length) {
+                gameState.currentPlayerIndex = 0;
+                alert('所有玩家已查看词语！游戏正式开始！');
+                showStep(3);
+                updateRoundInfo();
+            } else {
+                document.getElementById('wordTitle').textContent = `第 ${gameState.currentPlayerIndex + 1} 位玩家 - ${gameState.players[gameState.currentPlayerIndex].name} 的词语`;
+                document.getElementById('currentWord').textContent = gameState.players[gameState.currentPlayerIndex].word;
+            }
+        }
+
+        function updateRoundInfo() {
+            document.getElementById('roundInfo').textContent = `第 ${gameState.round} 轮 - 请 ${gameState.players[gameState.currentPlayerIndex].name} 描述你的词语`;
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+        }
+
+        function submitSpeech() {
+            const speech = document.getElementById('speechInput').value.trim();
+            if (!speech) {
+                alert('请输入你的描述');
+                return;
+            }
+
+            const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+            gameState.speechHistory.push({
+                playerName: currentPlayer.name,
+                speech
+            });
+
+            document.getElementById('speechInput').value = '';
+            updateSpeechHistory();
+
+            gameState.currentPlayerIndex++;
+            
+            const activePlayers = gameState.players.filter((_, i) => !gameState.eliminatedPlayers.includes(i));
+            
+            if (gameState.currentPlayerIndex >= activePlayers.length) {
+                gameState.currentPlayerIndex = 0;
+                showStep(4);
+                updateVotingSection();
+            } else {
+                const nextActiveIndex = gameState.players.findIndex((_, i) => 
+                    !gameState.eliminatedPlayers.includes(i) && i >= gameState.currentPlayerIndex
+                ) || gameState.players.findIndex((_, i) => !gameState.eliminatedPlayers.includes(i));
+                gameState.currentPlayerIndex = nextActiveIndex;
+                updateRoundInfo();
+            }
+        }
+
+        function updateSpeechHistory() {
+            const history = document.getElementById('speechHistory');
+            history.innerHTML = gameState.speechHistory.map((item, index) => `
+                <div class="speech-item">
+                    <div class="speech-player">${index + 1}. ${item.playerName}</div>
+                    <div class="speech-content">${item.speech}</div>
+                </div>
+            `).join('');
+            history.scrollTop = history.scrollHeight;
+        }
+
+        function updateVotingSection() {
+            const section = document.getElementById('votingSection');
+            const activePlayers = gameState.players.filter((_, i) => !gameState.eliminatedPlayers.includes(i));
+            
+            section.innerHTML = activePlayers.map((player, index) => {
+                const actualIndex = gameState.players.findIndex(p => p.name === player.name);
+                return `
+                    <button class="vote-btn" onclick="selectVote(${actualIndex})" id="voteBtn_${actualIndex}">
+                        ${player.name}
+                    </button>
+                `;
+            }).join('');
+            
+            document.getElementById('voteBtn').disabled = true;
+            gameState.selectedVote = null;
+        }
+
+        function selectVote(index) {
+            if (gameState.eliminatedPlayers.includes(index)) return;
+            
+            gameState.selectedVote = index;
+            
+            document.querySelectorAll('.vote-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById(`voteBtn_${index}`).classList.add('selected');
+            document.getElementById('voteBtn').disabled = false;
+        }
+
+        function submitVote() {
+            if (gameState.selectedVote === null) return;
+
+            const votedPlayer = gameState.players[gameState.selectedVote];
+            
+            if (votedPlayer.isSpy) {
+                showResult(true);
+            } else {
+                gameState.eliminatedPlayers.push(gameState.selectedVote);
+                
+                const remainingPlayers = gameState.players.filter((_, i) => !gameState.eliminatedPlayers.includes(i));
+                
+                if (remainingPlayers.length <= 2) {
+                    showResult(false);
+                } else {
+                    gameState.round++;
+                    gameState.votes = {};
+                    gameState.selectedVote = null;
+                    document.getElementById('voteBtn').disabled = true;
+                    
+                    const nextSpeakerIndex = gameState.players.findIndex((_, i) => 
+                        !gameState.eliminatedPlayers.includes(i) && i > gameState.selectedVote
+                    );
+                    if (nextSpeakerIndex === -1) {
+                        gameState.currentPlayerIndex = gameState.players.findIndex((_, i) => 
+                            !gameState.eliminatedPlayers.includes(i)
+                        );
+                    } else {
+                        gameState.currentPlayerIndex = nextSpeakerIndex;
+                    }
+                    
+                    showStep(3);
+                    updateRoundInfo();
+                }
+            }
+        }
+
+        function showResult(civiliansWin) {
+            showStep(5);
+            
+            if (civiliansWin) {
+                document.getElementById('resultIcon').textContent = '🎉';
+                document.getElementById('resultTitle').textContent = '平民胜利！';
+                document.getElementById('resultText').textContent = '卧底已被找出！';
+            } else {
+                document.getElementById('resultIcon').textContent = '😈';
+                document.getElementById('resultTitle').textContent = '卧底胜利！';
+                document.getElementById('resultText').textContent = '卧底成功隐藏到最后！';
+            }
+            
+            const spyPlayer = gameState.players.find(p => p.isSpy);
+            document.getElementById('revealWord').innerHTML = `
+                <div>平民词语：<span>${gameState.civilianWord}</span></div>
+                <div>卧底词语：<span>${gameState.spyWord}</span></div>
+                <div>卧底是：<span>${spyPlayer.name}</span></div>
+            `;
+        }
+
+        function restartGame() {
+            showStep(1);
+        }
+    </script>
+</body>
+</html>
